@@ -1,8 +1,7 @@
 name: Update Release Tags
 on:
   push:
-    tags:
-      - v[0-9]+.[0-9]+.[0-9]+
+    tags: v?[0-9].[0-9].[0-9] # Must be a valid semver tag
 jobs:
   update-release-tags:
     runs-on: ubuntu-latest
@@ -12,8 +11,4 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: bewuethr/release-tracker-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          update-latest: true
+      - uses: ./ # update-action-release-tags
