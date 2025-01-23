@@ -28158,7 +28158,7 @@ async function getParentSha(ref) {
 async function git(params) {
     let output = '';
     let error = '';
-    await exec.exec('git', params, {
+    const exitCode = await exec.exec('git', params, {
         listeners: {
             stdout: (data) => {
                 output += data.toString();
@@ -28168,8 +28168,11 @@ async function git(params) {
             }
         }
     });
-    if (error) {
+    if (exitCode !== 0) {
         throw new Error(error);
+    }
+    if (error) {
+        core.warning(error);
     }
     return output;
 }

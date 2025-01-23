@@ -97,7 +97,7 @@ async function getParentSha(ref: string): Promise<string> {
 async function git(params: string[]): Promise<string> {
     let output: string = '';
     let error: string = '';
-    await exec.exec('git', params, {
+    const exitCode = await exec.exec('git', params, {
         listeners: {
             stdout: (data: Buffer) => {
                 output += data.toString();
@@ -107,8 +107,11 @@ async function git(params: string[]): Promise<string> {
             }
         }
     });
-    if (error) {
+    if (exitCode !== 0) {
         throw new Error(error);
+    }
+    if (error) {
+        core.warning(error);
     }
     return output;
 }
