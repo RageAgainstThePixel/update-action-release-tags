@@ -41,7 +41,7 @@ const main = async () => {
                 await git(['push', 'origin', majorTag, '--force']);
             }
         }
-        if (updateMinor) {
+        if (updateMinor && minor !== '0') {
             const minorTag = hasPrefix ? `v${major}.${minor}` : `${major}.${minor}`;
             core.debug(`minorTag: ${minorTag}`);
             let minorSha: string | null = null;
@@ -71,7 +71,7 @@ main();
  */
 async function getTags(): Promise<Map<string, string>> {
     const semverRegex = /^v?\d+\.\d+\.\d+$/;
-    const tags = (await git(['tag', '--list', `--sort='version:refname'`])).split('\n').filter(tag => tag.trim() !== '').filter(tag => semverRegex.test(tag));
+    const tags = (await git(['tag', '--list', `--sort=version:refname`])).split('\n').filter(tag => tag.trim() !== '').filter(tag => semverRegex.test(tag));
     const tagMap = new Map<string, string>();
     for (let i = 0; i < tags.length; i++) {
         const tag = tags[i];
