@@ -28110,11 +28110,11 @@ const main = async () => {
             }
             if (!majorSha) {
                 await git(['tag', '-a', majorTag, '-m', 'create major release tag']);
-                await git(['push', 'origin', majorTag, '--force']);
+                await git(['push', 'origin', majorTag, '--force'], false);
             }
             else if (tags.get(latestTag) !== majorSha) {
                 await git(['tag', '-fa', majorTag, '-m', 'update major release tag']);
-                await git(['push', 'origin', majorTag, '--force']);
+                await git(['push', 'origin', majorTag, '--force'], false);
             }
         }
         if (updateMinor && minor !== '0') {
@@ -28129,11 +28129,11 @@ const main = async () => {
             }
             if (!minorSha) {
                 await git(['tag', '-a', minorTag, '-m', 'create minor release tag']);
-                await git(['push', 'origin', minorTag, '--force']);
+                await git(['push', 'origin', minorTag, '--force'], false);
             }
             else if (tags.get(latestTag) !== minorSha) {
                 await git(['tag', '-fa', minorTag, '-m', 'update minor release tag']);
-                await git(['push', 'origin', minorTag, '--force']);
+                await git(['push', 'origin', minorTag, '--force'], false);
             }
         }
     }
@@ -28155,7 +28155,7 @@ async function getTags() {
 async function getParentSha(ref) {
     return (await git(['rev-parse', '--verify', `${ref}^{}`])).trim();
 }
-async function git(params) {
+async function git(params, warnOnError = true) {
     let output = '';
     let error = '';
     const exitCode = await exec.exec('git', params, {
@@ -28171,7 +28171,7 @@ async function git(params) {
     if (exitCode !== 0) {
         throw new Error(error);
     }
-    if (error) {
+    if (error && warnOnError) {
         core.warning(error);
     }
     return output;
