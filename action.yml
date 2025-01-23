@@ -1,8 +1,17 @@
-name: github-action-template
-description: 'A GitHub Actions template repository for TypeScript based Actions'
-# inputs:
-# outputs:
+name: update-action-release-tags
+description: 'A GitHub Action to update pinned action release versions'
+branding:
+  icon: 'tag'
+  color: 'blue'
+inputs:
+  update-major:
+    description: 'Update the major version tag'
+    required: false
+    default: 'true'
+  update-minor:
+    description: 'Update the minor version tag'
+    required: false
+    default: 'true'
 runs:
   using: 'node20'
   main: 'dist/index.js'
-  #post: 'dist/index.js'
