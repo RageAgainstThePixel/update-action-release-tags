@@ -22,7 +22,7 @@ For example the following will match to the same release:
 name: Update Release Tags
 on:
   push:
-    tags: v?[0-9].[0-9].[0-9] # Must be a valid semver tag
+    tags: ['*']
 jobs:
   update-release-tags:
     runs-on: ubuntu-latest
