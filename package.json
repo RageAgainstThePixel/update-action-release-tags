@@ -1,6 +1,6 @@
 {
   "name": "update-action-release-tags",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A GitHub Action to update pinned action release versions.",
   "author": "RageAgainstThePixel",
   "license": "MIT",
@@ -19,10 +19,10 @@
     "@actions/exec": "^1.1.1"
   },
   "devDependencies": {
-    "@types/node": "^22.15.18",
+    "@types/node": "^22.19.1",
     "@vercel/ncc": "^0.34.0",
     "shx": "^0.3.4",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.3"
   },
   "scripts": {
     "build": "npm run clean && npm run bundle",
