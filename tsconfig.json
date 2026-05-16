@@ -1,15 +1,19 @@
 {
     "compilerOptions": {
         "target": "es2018",
-        "module": "commonjs",
-        "moduleResolution": "node",
+        "module": "esnext",
+        "moduleResolution": "bundler",
         "noImplicitAny": false,
         "removeComments": true,
         "preserveConstEnums": true,
         "sourceMap": true,
         "forceConsistentCasingInFileNames": true,
+        "rootDir": "src",
         "outDir": "dist",
         "declaration": false,
+        "types": [
+            "node"
+        ],
     },
     "compileOnSave": true,
     "include": [
