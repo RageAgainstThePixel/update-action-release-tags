@@ -1,5 +1,5 @@
-import core = require('@actions/core');
-import exec = require('@actions/exec');
+import * as core from '@actions/core';
+import * as exec from '@actions/exec';
 
 const main = async () => {
     try {
@@ -21,9 +21,13 @@ const main = async () => {
             return;
         }
         const latestTag = [...tags.keys()].pop();
+        if (!latestTag) {
+            core.info('No tags found!');
+            return;
+        }
         core.debug(`latestTag: ${latestTag}`);
         const hasPrefix = latestTag.startsWith('v');
-        const [major, minor] = latestTag.replace(/^v/, '').split('.');
+        const [major, minor = '0'] = latestTag.replace(/^v/, '').split('.');
         if (updateMajor) {
             const majorTag = hasPrefix ? `v${major}` : major;
             core.debug(`majorTag: ${majorTag}`);
@@ -59,7 +63,7 @@ const main = async () => {
             }
         }
     } catch (error) {
-        core.setFailed(error);
+        core.setFailed(error instanceof Error ? error : String(error));
     }
 }
 

@@ -29,7 +29,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
         with:
           fetch-depth: 0 # Required to fetch all tags
       - uses: RageAgainstThePixel/update-action-release-tags@v1
