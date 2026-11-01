@@ -1,0 +1,99 @@
+name: validate
+on:
+  push:
+    branches: ['main']
+  pull_request:
+    branches: ['*']
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: action
+      # a release repo in the workspace, pushing to a local bare origin
+      - name: Create test release repo
+        shell: bash
+        run: |
+          set -euo pipefail
+          git init -q --bare "${RUNNER_TEMP}/origin.git"
+          git init -q -b main
+          echo "action/" >> .git/info/exclude
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add origin "${RUNNER_TEMP}/origin.git"
+          git commit -q --allow-empty -m "release 1.2.3"
+          git tag v1.2.3
+          git push -q origin main v1.2.3
+      - uses: ./action # RageAgainstThePixel/update-action-release-tags
+        env:
+          GITHUB_REF: refs/tags/v1.2.3
+      - name: Verify v1 and v1.2 tags were created
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag_sha() { git -C "${RUNNER_TEMP}/origin.git" rev-parse --verify "$1^{}"; }
+          expected="$(tag_sha v1.2.3)"
+          for tag in v1 v1.2; do
+            if [ "$(tag_sha "${tag}")" != "${expected}" ]; then
+              echo "::error::${tag} should point at v1.2.3"
+              exit 1
+            fi
+          done
+          git commit -q --allow-empty -m "release 1.3.0"
+          git tag v1.3.0
+          git push -q origin main v1.3.0
+      - uses: ./action # RageAgainstThePixel/update-action-release-tags
+        env:
+          GITHUB_REF: refs/tags/v1.3.0
+      - name: Verify v1 moved and v1.3 was created
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag_sha() { git -C "${RUNNER_TEMP}/origin.git" rev-parse --verify "$1^{}"; }
+          if [ "$(tag_sha v1)" != "$(tag_sha v1.3.0)" ]; then
+            echo "::error::v1 should point at v1.3.0"
+            exit 1
+          fi
+          if [ "$(tag_sha v1.3)" != "$(tag_sha v1.3.0)" ]; then
+            echo "::error::v1.3 should point at v1.3.0"
+            exit 1
+          fi
+          if [ "$(tag_sha v1.2)" != "$(tag_sha v1.2.3)" ]; then
+            echo "::error::v1.2 should still point at v1.2.3"
+            exit 1
+          fi
+          git commit -q --allow-empty -m "release 1.4.0"
+          git tag v1.4.0
+          git push -q origin main v1.4.0
+      - uses: ./action # RageAgainstThePixel/update-action-release-tags
+        env:
+          GITHUB_REF: refs/tags/v1.4.0
+        with:
+          update-major: false
+          update-minor: false
+      - name: Verify no tags moved when updates are disabled
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag_sha() { git -C "${RUNNER_TEMP}/origin.git" rev-parse --verify "$1^{}"; }
+          if [ "$(tag_sha v1)" != "$(tag_sha v1.3.0)" ]; then
+            echo "::error::v1 should still point at v1.3.0"
+            exit 1
+          fi
+          if git -C "${RUNNER_TEMP}/origin.git" rev-parse --verify --quiet "v1.4^{}" > /dev/null; then
+            echo "::error::v1.4 should not exist"
+            exit 1
+          fi
