@@ -14,6 +14,8 @@ For example the following will match to the same release:
 - uses: {owner}/{action}@v1.1.1
 ```
 
+The action must run on a tag push (`refs/tags/*`). It reads the highest semver tag, then creates or force pushes the matching major and minor tags, keeping the `v` prefix if the release has one (`v1.2.3` updates `v1` and `v1.2`, `1.2.3` updates `1` and `1.2`). The minor tag is skipped when the minor version is `0` (e.g. `v2.0.1` only updates `v2`).
+
 ## How to use
 
 ### workflow
@@ -25,11 +27,11 @@ on:
     tags: ['*']
 jobs:
   update-release-tags:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # Required to fetch all tags
       - uses: RageAgainstThePixel/update-action-release-tags@v1
