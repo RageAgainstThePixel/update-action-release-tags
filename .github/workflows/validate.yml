@@ -23,6 +23,9 @@ jobs:
       - uses: actions/checkout@v7
         with:
           path: action
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
       # a release repo in the workspace, pushing to a local bare origin
       - name: Create test release repo
         shell: bash
@@ -37,9 +40,10 @@ jobs:
           git commit -q --allow-empty -m "release 1.2.3"
           git tag v1.2.3
           git push -q origin main v1.2.3
-      - uses: ./action # RageAgainstThePixel/update-action-release-tags
-        env:
-          GITHUB_REF: refs/tags/v1.2.3
+      # the runner sets GITHUB_REF for uses: steps, so the committed dist runs directly on the test tag
+      - name: Run action on v1.2.3
+        shell: bash
+        run: GITHUB_REF=refs/tags/v1.2.3 node action/dist/index.js
       - name: Verify v1 and v1.2 tags were created
         shell: bash
         run: |
@@ -55,9 +59,9 @@ jobs:
           git commit -q --allow-empty -m "release 1.3.0"
           git tag v1.3.0
           git push -q origin main v1.3.0
-      - uses: ./action # RageAgainstThePixel/update-action-release-tags
-        env:
-          GITHUB_REF: refs/tags/v1.3.0
+      - name: Run action on v1.3.0
+        shell: bash
+        run: GITHUB_REF=refs/tags/v1.3.0 node action/dist/index.js
       - name: Verify v1 moved and v1.3 was created
         shell: bash
         run: |
@@ -78,12 +82,9 @@ jobs:
           git commit -q --allow-empty -m "release 1.4.0"
           git tag v1.4.0
           git push -q origin main v1.4.0
-      - uses: ./action # RageAgainstThePixel/update-action-release-tags
-        env:
-          GITHUB_REF: refs/tags/v1.4.0
-        with:
-          update-major: false
-          update-minor: false
+      - name: Run action on v1.4.0 with updates disabled
+        shell: bash
+        run: env GITHUB_REF=refs/tags/v1.4.0 INPUT_UPDATE-MAJOR=false INPUT_UPDATE-MINOR=false node action/dist/index.js
       - name: Verify no tags moved when updates are disabled
         shell: bash
         run: |
